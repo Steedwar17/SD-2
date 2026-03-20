@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Worker Node</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=Syne:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+
+    <header class="header">
+        <div class="header-left">
+            <div class="status-dot" id="header-dot"></div>
+            <h1>Worker Steedwar</h1>
+        </div>
+        <button class="err-btn" onclick="toggleModal()">
+            Errores <span id="errorCount" class="err-count">0</span>
+        </button>
+    </header>
+
+    <!-- Configuración -->
+    <section class="card card--config">
+        <div class="card-label">Configuración</div>
+        <div class="config-grid">
+            <div class="field">
+                <label>Nombre</label>
+                <input type="text" id="input-name" placeholder="Sebastian" value="Worker Steedwar">
+            </div>
+            <div class="field">
+                <label>URL Pública (Ngrok)</label>
+                <input type="text" id="input-public" placeholder="wss://mi-worker.ngrok.app">
+            </div>
+            <div class="field field--full">
+                <label>URL Coordinador (WebSocket)</label>
+                <input type="text" id="input-coord" placeholder="wss://coordinador.ngrok.app">
+            </div>
+        </div>
+        <div class="btn-row">
+            <button class="btn btn--primary" onclick="connectWorker()">Conectar</button>
+            <button class="btn btn--ghost"   onclick="changeCoordinator()">Cambiar coordinador</button>
+            <button class="btn btn--ghost"   onclick="addBackup()">Agregar backup</button>
+            <button class="btn btn--danger"  onclick="disconnectWorker()">Detener</button>
+        </div>
+    </section>
+
+    <!-- Dashboard -->
+    <div class="dashboard">
+
+        <!-- Worker info -->
+        <section class="card">
+            <div class="card-label">Worker</div>
+            <div class="stat-grid">
+                <div class="stat stat--full">
+                    <span class="stat-label">Worker Steedwar</span>
+                    <span class="stat-value mono" id="w-id">—</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Puerto</span>
+                    <span class="stat-value mono" id="w-port">—</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Intervalo de pulso</span>
+                    <span class="stat-value mono" id="w-interval">—</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Estado</span>
+                    <span class="stat-value" id="w-status">
+                        <span class="pill pill--off">Sin coordinador</span>
+                    </span>
+                </div>
+                <div class="stat stat--full">
+                    <span class="stat-label">URL Pública</span>
+                    <span class="stat-value mono" id="w-public-url">No configurada</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Coordinador info -->
+        <section class="card">
+            <div class="card-label">Coordinador</div>
+            <div class="stat-grid">
+                <div class="stat">
+                    <span class="stat-label">Nombre</span>
+                    <span class="stat-value" id="c-name">—</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Conexión</span>
+                    <span class="stat-value" id="c-status">
+                        <span class="pill pill--off">—</span>
+                    </span>
+                </div>
+                <div class="stat stat--full">
+                    <span class="stat-label">URL Actual</span>
+                    <span class="stat-value mono" id="c-url">No configurado</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Último pulso</span>
+                    <span class="stat-value mono" id="c-last">Nunca</span>
+                </div>
+                <div class="stat stat--full">
+                    <span class="stat-label">Coordinadores conocidos</span>
+                    <ul id="c-backups" class="backup-list"></ul>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Terminal -->
+    <section class="card card--terminal">
+        <div class="card-label">System Log</div>
+        <div id="terminal-logs" class="terminal"></div>
+    </section>
+
+</div>
+
+<!-- Modal errores -->
+<div id="errorModal" class="modal" onclick="handleModalClick(event)">
+    <div class="modal-box">
+        <div class="modal-header">
+            <span>Historial de errores</span>
+            <button class="modal-close" onclick="toggleModal()">&#x2715;</button>
+        </div>
+        <div id="error-list" class="error-list"></div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
