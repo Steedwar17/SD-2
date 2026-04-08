@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Worker Node</title>
+    <title>Worker — Steedwar</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=Syne:wght@400;600;700&display=swap" rel="stylesheet">
@@ -12,32 +12,25 @@
 <body>
 
 <div class="container">
-
     <header class="header">
         <div class="header-left">
             <div class="status-dot" id="header-dot"></div>
-            <h1>Worker Steedwar</h1>
+            <h1>Worker <span class="header-id">Steedwar 55223025</span></h1>
         </div>
         <button class="err-btn" onclick="toggleModal()">
             Errores <span id="errorCount" class="err-count">0</span>
         </button>
     </header>
-
-    <!-- Configuración -->
     <section class="card card--config">
         <div class="card-label">Configuración</div>
         <div class="config-grid">
-            <div class="field">
-                <label>Nombre</label>
-                <input type="text" id="input-name" placeholder="Sebastian" value="Worker Steedwar">
-            </div>
-            <div class="field">
-                <label>URL Pública (Ngrok)</label>
-                <input type="text" id="input-public" placeholder="wss://mi-worker.ngrok.app">
-            </div>
             <div class="field field--full">
                 <label>URL Coordinador (WebSocket)</label>
                 <input type="text" id="input-coord" placeholder="wss://coordinador.ngrok.app">
+            </div>
+            <div class="field field--full">
+                <label>Agregar Backup</label>
+                <input type="text" id="input-backup" placeholder="wss://backup-coordinador.ngrok.app">
             </div>
         </div>
         <div class="btn-row">
@@ -47,25 +40,18 @@
             <button class="btn btn--danger"  onclick="disconnectWorker()">Detener</button>
         </div>
     </section>
-
-    <!-- Dashboard -->
     <div class="dashboard">
 
-        <!-- Worker info -->
         <section class="card">
             <div class="card-label">Worker</div>
             <div class="stat-grid">
                 <div class="stat stat--full">
-                    <span class="stat-label">Worker Steedwar</span>
+                    <span class="stat-label">ID</span>
                     <span class="stat-value mono" id="w-id">—</span>
                 </div>
                 <div class="stat">
                     <span class="stat-label">Puerto</span>
                     <span class="stat-value mono" id="w-port">—</span>
-                </div>
-                <div class="stat">
-                    <span class="stat-label">Intervalo de pulso</span>
-                    <span class="stat-value mono" id="w-interval">—</span>
                 </div>
                 <div class="stat">
                     <span class="stat-label">Estado</span>
@@ -74,15 +60,31 @@
                     </span>
                 </div>
                 <div class="stat stat--full">
+                    <span class="stat-label">Carga</span>
+                    <div class="load-bar-wrap">
+                        <div class="load-bar" id="w-load-bar"></div>
+                    </div>
+                    <span class="load-label mono" id="w-load-label">0%</span>
+                </div>
+                <div class="stat stat--full">
                     <span class="stat-label">URL Pública</span>
                     <span class="stat-value mono" id="w-public-url">No configurada</span>
+                </div>
+                <div class="stat stat--full">
+                    <span class="stat-label">Capacidades</span>
+                    <div id="w-capabilities" class="capability-tags"></div>
+                </div>
+                <div class="stat stat--full">
+                    <span class="stat-label">Registro con líder</span>
+                    <span class="stat-value" id="w-leader-reg">
+                        <span class="pill pill--off">Sin confirmar</span>
+                    </span>
                 </div>
             </div>
         </section>
 
-        <!-- Coordinador info -->
         <section class="card">
-            <div class="card-label">Coordinador</div>
+            <div class="card-label">Coordinador Activo</div>
             <div class="stat-grid">
                 <div class="stat">
                     <span class="stat-label">Nombre</span>
@@ -95,12 +97,22 @@
                     </span>
                 </div>
                 <div class="stat stat--full">
-                    <span class="stat-label">URL Actual</span>
+                    <span class="stat-label">URL</span>
                     <span class="stat-value mono" id="c-url">No configurado</span>
                 </div>
                 <div class="stat">
                     <span class="stat-label">Último pulso</span>
                     <span class="stat-value mono" id="c-last">Nunca</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Intervalo</span>
+                    <span class="stat-value mono" id="w-interval">3000 ms</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Watchdog</span>
+                    <span class="stat-value" id="w-watchdog">
+                        <span class="pill pill--off">Inactivo</span>
+                    </span>
                 </div>
                 <div class="stat stat--full">
                     <span class="stat-label">Coordinadores conocidos</span>
@@ -108,18 +120,112 @@
                 </div>
             </div>
         </section>
-
     </div>
+    <section class="card card--manual-task">
+        <div class="card-label">Envío Manual de Tareas</div>
+        <p class="manual-desc">Ejecuta una tarea directamente en este worker. El resultado se registra en el historial y se notifica al coordinador si hay conexión activa.</p>
 
-    <!-- Terminal -->
+        <div class="manual-grid">
+            <div class="field field--full">
+                <label>Tipo de tarea</label>
+                <div class="task-type-tabs" id="task-type-tabs">
+                    <button class="task-tab task-tab--active" data-type="math_compute" onclick="selectTaskType('math_compute')">🧮 math_compute</button>
+                    <button class="task-tab" data-type="http_fetch" onclick="selectTaskType('http_fetch')">🌐 http_fetch</button>
+                    <button class="task-tab" data-type="power_compute" onclick="selectTaskType('power_compute')">⚡ power_compute</button>
+                </div>
+            </div>
+            <div class="task-form" id="form-math_compute">
+                <div class="field">
+                    <label>Operación</label>
+                    <select id="math-op" class="field-select">
+                        <option value="add">add (a + b)</option>
+                        <option value="sub">sub (a − b)</option>
+                        <option value="mul">mul (a × b)</option>
+                        <option value="div">div (a ÷ b)</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>a</label>
+                    <input type="number" id="math-a" placeholder="10" value="10">
+                </div>
+                <div class="field">
+                    <label>b</label>
+                    <input type="number" id="math-b" placeholder="5" value="5">
+                </div>
+            </div>
+            <div class="task-form task-form--hidden" id="form-http_fetch">
+                <div class="field field--full">
+                    <label>URL</label>
+                    <input type="text" id="fetch-url" placeholder="https://httpbin.org/get">
+                </div>
+            </div>
+            <div class="task-form task-form--hidden" id="form-power_compute">
+                <div class="field">
+                    <label>Base</label>
+                    <input type="number" id="power-base" placeholder="2" value="2">
+                </div>
+                <div class="field">
+                    <label>Exponente</label>
+                    <input type="number" id="power-exp" placeholder="10" value="10">
+                </div>
+            </div>
+
+        </div>
+
+        <div class="btn-row" style="margin-top:14px">
+            <button class="btn btn--primary" onclick="sendManualTask()">Enviar tarea</button>
+            <button class="btn btn--ghost" onclick="clearManualResult()">Limpiar resultado</button>
+        </div>
+        <div id="manual-result-wrap" class="manual-result-wrap" style="display:none">
+            <div class="manual-result-label">Resultado</div>
+            <div id="manual-result" class="manual-result mono"></div>
+        </div>
+    </section>
+    <section class="card card--tasks">
+        <div class="task-feed-header">
+            <div>
+                <div class="card-label" style="margin-bottom:4px">Tareas en Tiempo Real</div>
+                <div class="feed-subtitle">Ejecutadas automáticamente al recibirlas del coordinador</div>
+            </div>
+            <div class="task-counters">
+                <div class="task-counter">
+                    <span class="counter-dot dot-running"></span>
+                    <span id="cnt-running-num">0</span>
+                    <span class="counter-label">activas</span>
+                </div>
+                <div class="task-counter">
+                    <span class="counter-dot dot-ok"></span>
+                    <span id="cnt-ok-num">0</span>
+                    <span class="counter-label">ok</span>
+                </div>
+                <div class="task-counter">
+                    <span class="counter-dot dot-error"></span>
+                    <span id="cnt-error-num">0</span>
+                    <span class="counter-label">error</span>
+                </div>
+                <div class="task-counter">
+                    <span class="counter-dot" style="background:var(--accent)"></span>
+                    <span id="cnt-total-num">0</span>
+                    <span class="counter-label">total</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="task-feed" class="task-feed">
+            <div class="feed-empty">
+                <div class="feed-empty-icon">⏳</div>
+                <p>Esperando tareas del coordinador...</p>
+                <p class="feed-empty-sub">Las tareas llegan y se ejecutan automáticamente</p>
+            </div>
+        </div>
+        <div id="feed-overflow-note" class="feed-overflow-note" style="display:none"></div>
+    </section>
     <section class="card card--terminal">
         <div class="card-label">System Log</div>
         <div id="terminal-logs" class="terminal"></div>
     </section>
 
 </div>
-
-<!-- Modal errores -->
 <div id="errorModal" class="modal" onclick="handleModalClick(event)">
     <div class="modal-box">
         <div class="modal-header">
@@ -129,7 +235,6 @@
         <div id="error-list" class="error-list"></div>
     </div>
 </div>
-
 <script src="script.js"></script>
 </body>
 </html>
